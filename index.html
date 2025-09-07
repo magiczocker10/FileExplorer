@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Nintendo file viewer</title>
+		<meta name="description" content="View various nintendo files" />
+		<meta name="keywords" content="html5, 3ds, explorer, icn, msbt, narc, szs" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link type="text/css" rel="stylesheet" href="./style.css" media="all" />
+		<div class="errorOutput"></div>
+		<script>
+			window.addEventListener( 'error', function ( e ) {
+				const main = document.getElementsByClassName( 'errorOutput' )[ 0 ],
+					ele = main.appendChild( document.createElement( 'ul' ) ),
+					file = ele.appendChild( document.createElement( 'li' ) ),
+					line = ele.appendChild( document.createElement( 'li' ) ),
+					reason = ele.appendChild( document.createElement( 'li' ) ),
+					fileLabel = file.appendChild( document.createElement( 'span' ) ),
+					lineLabel = line.appendChild( document.createElement( 'span' ) ),
+					reasonLabel = reason.appendChild( document.createElement( 'span' ) );
+				file.appendChild( document.createTextNode( e.filename ) );
+				line.appendChild( document.createTextNode( e.lineno ) );
+				reason.appendChild( document.createTextNode( e.message ) );
+				fileLabel.textContent = 'File: ';
+				lineLabel.textContent = 'Line: ';
+				reasonLabel.textContent = 'Reason: ';
+				return false;
+			}, false );
+		</script>
+		<script type="text/javascript" src="./script.js"></script>
+		<script type="text/javascript" src="./formats/msgstdbn.js"></script>
+		<script type="text/javascript" src="./formats/icn.js"></script>
+		<script type="text/javascript" src="./formats/narc.js"></script>
+		<script type="text/javascript" src="./formats/sarc.js"></script>
+		<script type="text/javascript" src="./yaz0.js"></script>
+	</head>
+	<body>
+		<div class="window-template">
+			<div class="window-container" style="width:800px;height:500px;top:50px;left:50px;">
+				<div class="resizer" data-side="tl"></div>
+				<div class="resizer" data-side="tr"></div>
+				<div class="resizer" data-side="bl"></div>
+				<div class="resizer" data-side="br"></div>
+				<div class="resizer" data-side="t"></div>
+				<div class="resizer" data-side="b"></div>
+				<div class="resizer" data-side="l"></div>
+				<div class="resizer" data-side="r"></div>
+				<div class="window-header">
+					<div class="window-title"></div>
+					<div class="window-minimize">─</div>
+					<div class="window-close">✕</div>
+				</div>
+				<div class="window-content"></div>
+			</div>
+		</div>
+	</body>
+</html>
