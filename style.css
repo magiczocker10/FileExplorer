@@ -96,22 +96,22 @@ body {
 	display: none;
 }
 
-.resizer[ data-side='tl' ] {
+.resizer[ data-side='t l' ] {
 	cursor: nw-resize;
 	grid-area: tl;
 }
 
-.resizer[ data-side='tr' ] {
+.resizer[ data-side='t r' ] {
 	cursor: ne-resize;
 	grid-area: tr;
 }
 
-.resizer[ data-side='bl' ] {
+.resizer[ data-side='b l' ] {
 	cursor: sw-resize;
 	grid-area: bl;
 }
 
-.resizer[ data-side='br' ] {
+.resizer[ data-side='b r' ] {
 	cursor: se-resize;
 	grid-area: br;
 }
@@ -241,5 +241,14 @@ body {
 	.wikitable > * > tr > th {
 		background-color: #27292d;
 		color: #eaecf0;
+	}
+}
+
+@media ( forced-colors: active ) {
+	.window-content,
+	.window-container,
+	.window-minimize:hover,
+	.window-close:hover {
+		border: 1px solid #fff;
 	}
 }

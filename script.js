@@ -42,59 +42,22 @@
 		}
 	}
 
-	function mousedownResizer( e ) {
-		let elmnt = e.target.parentElement;
-		const currentResizer = e.target;
-		if ( !elmnt.classList.contains( 'window-container' ) ) {
-			elmnt = elmnt.parentElement;
-		}
-		let prevX = e.clientX,
-			prevY = e.clientY;
-		document.addEventListener( 'mousemove', mousemove, false );
-		document.addEventListener( 'mouseup', mouseup, false );
-		function mousemove( f ) {
-			if ( currentResizer.dataset.side === 'br' ) {
-				elmnt.style.width = elmnt.offsetWidth + ( f.clientX - prevX ) + 'px';
-				elmnt.style.height = elmnt.offsetHeight + ( f.clientY - prevY ) + 'px';
-			} else if ( currentResizer.dataset.side === 'bl' ) {
-				elmnt.style.width = elmnt.offsetWidth + ( prevX - f.clientX ) + 'px';
-				elmnt.style.height = elmnt.offsetHeight + ( f.clientY - prevY ) + 'px';
-				elmnt.style.left = elmnt.offsetLeft + ( f.clientX - prevX ) + 'px';
-			} else if ( currentResizer.dataset.side === 'tr' ) {
-				elmnt.style.width = elmnt.offsetWidth + ( f.clientX - prevX ) + 'px';
-				elmnt.style.height = elmnt.offsetHeight + ( prevY - f.clientY ) + 'px';
-				elmnt.style.top = elmnt.offsetTop + ( f.clientY - prevY ) + 'px';
-			} else if ( currentResizer.dataset.side === 'tl' ) {
-				elmnt.style.width = elmnt.offsetWidth + ( prevX - f.clientX ) + 'px';
-				elmnt.style.height = elmnt.offsetHeight + ( prevY - f.clientY ) + 'px';
-				elmnt.style.top = elmnt.offsetTop + ( f.clientY - prevY ) + 'px';
-				elmnt.style.left = elmnt.offsetLeft + ( f.clientX - prevX ) + 'px';
-			} else if ( currentResizer.dataset.side === 't' ) {
-				elmnt.style.height = elmnt.offsetHeight + ( prevY - f.clientY ) + 'px';
-				elmnt.style.top = elmnt.offsetTop + ( f.clientY - prevY ) + 'px';
-			} else if ( currentResizer.dataset.side === 'b' ) {
-				elmnt.style.height = elmnt.offsetHeight + ( f.clientY - prevY ) + 'px';
-			} else if ( currentResizer.dataset.side === 'l' ) {
-				elmnt.style.width = elmnt.offsetWidth + ( prevX - f.clientX ) + 'px';
-				elmnt.style.left = elmnt.offsetLeft + ( f.clientX - prevX ) + 'px';
-			} else if ( currentResizer.dataset.side === 'r' ) {
-				elmnt.style.width = elmnt.offsetWidth + ( f.clientX - prevX ) + 'px';
-			}
-			prevX = f.clientX;
-			prevY = f.clientY;
-		}
-		function mouseup() {
-			document.removeEventListener( 'mousemove', mousemove );
-			document.removeEventListener( 'mouseup', mouseup );
-		}
-	}
-
 	function closeWindow( e ) {
 		let main = e.target.parentElement;
 		if ( !main.classList.contains( 'window-container' ) ) {
 			main = main.parentElement;
 		}
 		body.removeChild( main );
+		if ( Number( main.style.zIndex ) === index ) {
+			while ( index > 20 ) {
+				index--;
+				const ele = document.querySelector( `div[style*="z-index: ${ index }"]` );
+				if ( ele ) {
+					ele.classList.add( 'window-active' );
+					break;
+				}
+			}
+		}
 	}
 
 	function resizeWindow( e ) {
@@ -151,11 +114,8 @@
 		minimize.addEventListener( 'click', resizeWindow, false );
 		close.addEventListener( 'click', closeWindow, false );
 		moveToFront( { target: title } );
-		const resizers = document.querySelectorAll( '.resizer' );
 
-		for ( let j = 0; j < resizers.length; j++ ) {
-			resizers[ j ].addEventListener( 'mousedown', mousedownResizer, false );
-		}
+		makeResizableDiv( main );
 
 		if (
 			array[ 0 ] === 89 && // Y
@@ -184,10 +144,20 @@
 		} );
 	}
 
+	// https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file
+	function returnFileSize( number ) {
+		if ( number < 1e3 ) {
+			return `${ number } bytes`;
+		} else if ( number >= 1e3 && number < 1e6 ) {
+			return `${ ( number / 1e3 ).toFixed( 1 ) } KB`;
+		}
+		return `${ ( number / 1e6 ).toFixed( 1 ) } MB`;
+	}
+
 	function loadFile( stream ) {
 		const reader = new FileReader();
 		reader.onloadend = function ( readerEvent ) {
-			addWindow( new Uint8Array( readerEvent.target.result ), stream.name );
+			addWindow( new Uint8Array( readerEvent.target.result ), `${ stream.name } (${ returnFileSize( stream.size ) })` );
 		};
 		reader.readAsArrayBuffer( stream );
 	}
@@ -203,6 +173,7 @@
 			for ( let file = 0; file < files.length; file++ ) {
 				loadFile( files[ file ] );
 			}
+			e.target.value = null;
 		}, false );
 		body.appendChild( uploadButton );
 		body.appendChild( supported );
