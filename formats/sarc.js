@@ -3,27 +3,20 @@
 addFormat( {
 	name: 'SARC',
 	extensions: [ '.sarc', '.szs' ],
-	magic: [
-		[ 0, 0x53 ], // S
-		[ 1, 0x41 ], // A
-		[ 2, 0x52 ], // R
-		[ 3, 0x43 ] // C
-	],
-	func: function ( array ) {
-		const isLittleEndian = new DataView( array.slice( 6, 8 ).buffer ).getUint16( 0, 0 ) === 0xFFFE,
-			te8 = new TextDecoder( 'utf-8' ),
+	magic: 'SARC',
+	func: function ( dataView ) {
+		const te8 = new TextDecoder( 'utf-8' ),
+			isLittleEndian = dataView.getUint16(6, false ) === 0xFFFE,
 			fileData = {
-				fileSize: new DataView( array.slice( 8, 12 ).buffer ).getUint32( 0, 1 ),
-				dataOffsetBeginning: new DataView(
-					array.slice( 0x0C, 0x10 ).buffer
-				).getUint32( 0, 1 ),
+				fileSize: dataView.getUint32( 8, true ),
+				dataOffsetBeginning: dataView.getUint32( 0x0C, true ),
 				nodes: [],
-				version: new DataView( array.slice( 0x10, 0x12 ).buffer ).getUint16( 0, 1 )
+				version: dataView.getUint16( 0x10, true )
 			},
 			outputData = [];
-		for ( let offset = 0x14; offset < array.length; offset++ ) {
+		for ( let offset = 0x14; offset < dataView.byteLength - 3; offset++ ) {
 
-			const magic = te8.decode( array.slice( offset, offset + 4 ) );
+			const magic = getString( dataView, offset, 4 );
 			if (
 				magic !== 'SFAT' &&
 				magic !== 'SFNT'
@@ -33,28 +26,18 @@ addFormat( {
 
 			console.log( 'SARC - Processing chunk', magic );
 
-			const chunkData = array.slice( offset, array.length );
-
 			if ( magic === 'SFAT' ) { // File allocation table
 				fileData.sfat = {
-					nodeCount: new DataView(
-						chunkData.slice( 0x06, 0x08 ).buffer
-					).getUint16( 0, isLittleEndian ),
-					hashKey: new DataView(
-						chunkData.slice( 0x08, 0x0C ).buffer
-					).getUint32( 0, isLittleEndian )
+					nodeCount: dataView.getUint16( offset + 0x06, isLittleEndian ),
+					hashKey: dataView.getUint32( offset + 0x08, isLittleEndian )
 				};
 				for ( let i = 0; i < fileData.sfat.nodeCount; i++ ) {
 					const cursor = 0x0C + 0x10 * i,
 						nodeData = {
-							hash: chunkData.slice( cursor, cursor + 4 ),
-							attributes: chunkData.slice( cursor + 4, cursor + 8 ),
-							dataStart: new DataView(
-								chunkData.slice( cursor + 8, cursor + 12 ).buffer
-							).getUint32( 0, isLittleEndian ),
-							dataEnd: new DataView(
-								chunkData.slice( cursor + 12, cursor + 16 ).buffer
-							).getUint32( 0, isLittleEndian )
+							hash: dataView.buffer.slice( offset + cursor, offset + cursor + 4 ),
+							attributes: dataView.buffer.slice( offset + cursor + 4, offset + cursor + 8 ),
+							dataStart: dataView.getUint32( offset + cursor + 8, isLittleEndian ),
+							dataEnd: dataView.getUint32( offset + cursor + 12, isLittleEndian )
 						};
 					fileData.nodes.push( nodeData );
 				}
@@ -64,9 +47,9 @@ addFormat( {
 					lastZero = false,
 					cursorSFNT = 0x07;
 				while ( index <= fileData.sfat.nodeCount ) {
-					const byte = chunkData.slice( cursorSFNT, cursorSFNT + 1 );
+					const byte = dataView.getUint8( offset + cursorSFNT, false );
 					cursorSFNT++;
-					if ( byte[ 0 ] === 0 ) {
+					if ( byte === 0 ) {
 						if ( lastZero ) {
 							continue;
 						}
@@ -78,11 +61,11 @@ addFormat( {
 						fileData.nodes[ index ].name = '';
 					} else {
 						lastZero = false;
-						fileData.nodes[ index ].name += te8.decode( byte );
+						fileData.nodes[ index ].name += String.fromCharCode( byte );
 					}
 				}
 				for ( let j = 0; j < fileData.sfat.nodeCount; j++ ) {
-					fileData.nodes[ j ].content = array.slice(
+					fileData.nodes[ j ].content = dataView.buffer.slice(
 						fileData.dataOffsetBeginning + fileData.nodes[ j ].dataStart,
 						fileData.dataOffsetBeginning + fileData.nodes[ j ].dataEnd
 					);
@@ -109,7 +92,7 @@ addFormat( {
 			download.type = 'button';
 			download.value = '\u21E9';
 			button.addEventListener( 'click', () => {
-				window.addWindow( d[ 1 ], d[ 0 ] );
+				window.addWindow( new DataView( d[ 1 ] ), d[ 0 ] );
 			} );
 			download.addEventListener( 'click', () => {
 				const blobData = new Blob( [ d[ 1 ].buffer ], { type: 'text/plain' } ),

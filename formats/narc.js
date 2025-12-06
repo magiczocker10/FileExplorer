@@ -3,21 +3,16 @@
 addFormat( {
 	name: 'NARC',
 	extensions: [ '.narc', '.szs' ],
-	magic: [
-		[ 0, 0x4E ], // N
-		[ 1, 0x41 ], // A
-		[ 2, 0x52 ], // R
-		[ 3, 0x43 ] // C
-	],
-	func: function ( array ) {
-		const isLittleEndian = new DataView( array.slice( 4, 6 ).buffer ).getUint16( 0, 0 ) !== 0xFFFE,
-			te8 = new TextDecoder( 'utf-8' ),
+	magic: 'NARC',
+	func: function ( dataView ) {
+		const isLittleEndian = dataView.getUint16(4, false ) !== 0xFFFE,
 			fileData = {},
 			outputData = [];
 
-		for ( let offset = 0x10; offset < array.length; offset++ ) {
+		for ( let offset = 0x10; offset < dataView.byteLength; offset++ ) {
 
-			const magic = te8.decode( array.slice( offset, offset + 4 ) );
+			const magic = getString( dataView, offset, 4 );
+
 			if (
 				magic !== 'FATB' && magic !== 'BTAF' &&
 				magic !== 'FNTB' && magic !== 'BTNF' &&
@@ -28,27 +23,16 @@ addFormat( {
 
 			console.log( 'Processing chunk', magic );
 
-			const chunkSize = new DataView(
-					array.slice( offset + 0x04, offset + 0x04 + 4 ).buffer
-				).getUint32( 0, isLittleEndian ),
-				chunkData = array.slice( offset, offset + chunkSize );
+			const chunkSize = dataView.getUint32( offset + 0x04, isLittleEndian );
 
 			if ( magic === 'FATB' || magic === 'BTAF' ) { // File allocation table
 
-				fileData.entryAmount = new DataView(
-					array.slice( 0x10 + 0x08, 0x10 + 0x08 + 4 ).buffer
-				).getUint32( 0, isLittleEndian );
+				fileData.entryAmount = dataView.getUint32( 0x10 + 0x08, isLittleEndian );
 				fileData.entryOffsets = [];
 				for ( let i = 0; i < fileData.entryAmount; i++ ) {
 					fileData.entryOffsets.push( [
-						new DataView( chunkData.slice(
-							0x0C + i * 0x08,
-							0x0C + i * 0x08 + 0x04
-						).buffer ).getUint32( 0, isLittleEndian ),
-						new DataView( chunkData.slice(
-							0x0C + i * 0x08 + 0x04,
-							0x0C + i * 0x08 + 0x08
-						).buffer ).getUint32( 0, isLittleEndian )
+						dataView.getUint32( offset + 0x0C + i * 0x08, isLittleEndian ),
+						dataView.getUint32( offset + 0x0C + i * 0x08 + 0x04, isLittleEndian )
 					] );
 				}
 
@@ -57,12 +41,8 @@ addFormat( {
 				let cursor = 0x10;
 				fileData.fileNames = [];
 				for ( let j = 0; j < fileData.entryAmount; j++ ) {
-					const nameLength = new DataView(
-						chunkData.slice( cursor, cursor + 1 ).buffer
-					).getUint8( 0 );
-					fileData.fileNames.push(
-						te8.decode( chunkData.slice( cursor + 1, cursor + 1 + nameLength ) )
-					);
+					const nameLength = dataView.getUint8( offset + cursor, isLittleEndian );
+					fileData.fileNames.push( getString( dataView, offset + cursor + 1, nameLength ) );
 					cursor += 1 + nameLength;
 				}
 
@@ -71,9 +51,9 @@ addFormat( {
 				fileData.fileContent = [];
 				for ( let k = 0; k < fileData.entryAmount; k++ ) {
 					fileData.fileContent.push(
-						chunkData.slice(
-							0x08 + fileData.entryOffsets[ k ][ 0 ],
-							0x08 + fileData.entryOffsets[ k ][ 1 ]
+						dataView.buffer.slice(
+							offset + 0x08 + fileData.entryOffsets[ k ][ 0 ],
+							offset + 0x08 + fileData.entryOffsets[ k ][ 1 ]
 						)
 					);
 					outputData[ k ] = [
@@ -101,7 +81,7 @@ addFormat( {
 			button.value = 'Open';
 			download.type = 'button';
 			download.value = '\u21E9';
-			button.addEventListener( 'click', () => window.addWindow( d[ 1 ], d[ 0 ] ) );
+			button.addEventListener( 'click', () => window.addWindow( new DataView( d[ 1 ] ), d[ 0 ] ) );
 			download.addEventListener( 'click', () => {
 				const blobData = new Blob( [ d[ 1 ].buffer ], { type: 'text/plain' } ),
 					a = document.createElement( 'a' );
@@ -113,7 +93,7 @@ addFormat( {
 			row.insertCell( -1 ).appendChild( button );
 			row.insertCell( -1 ).appendChild( download );
 		} );
-		console.log( 'SARC - FileData', fileData );
+		console.log( 'NARC - FileData', fileData );
 		return output;
 	}
 } );

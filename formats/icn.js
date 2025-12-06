@@ -83,7 +83,7 @@
 							rgb565 = new DataView( data.slice(
 								offset,
 								offset + 2
-							).buffer ).getUint16( 0, 1 ),
+							) ).getUint16( 0, 1 ),
 							red5 = rgb565 >> 11,
 							green6 = ( rgb565 >> 5 ) & 0b111111,
 							blue5 = rgb565 & 0b11111,
@@ -109,16 +109,17 @@
 		a.click();
 	}
 
-	function getSettings( settingsData ) {
+	function getSettings( dataView ) {
+		const root = 0x2008;
 		const settings = {
-				regionLockout: new DataView( settingsData.slice( 0x10, 0x14 ).buffer ).getUint32( 0, 1 ),
+				regionLockout: dataView.getUint32( root + 0x10, true ),
 				matchMakerID: {
-					id: new DataView( settingsData.slice( 0x14, 0x18 ).buffer ).getUint32( 0, 1 ),
-					bitId: new DataView( settingsData.slice( 0x18, 0x20 ).buffer ).getBigUint64( 0, 1 )
+					id: dataView.getUint32( root + 0x14, true ),
+					bitId: dataView.getBigUint64( root + 0x18, true )
 				},
-				flags: new DataView( settingsData.slice( 0x20, 0x24 ).buffer ).getUint32( 0, 1 ),
-				eulaVersion: 'Minor: ' + new DataView( settingsData.slice( 0x24, 0x25 ).buffer ).getInt8( 0 ) + ' Major: ' + new DataView( settingsData.slice( 0x25, 0x26 ).buffer ).getInt8( 0 ),
-				cecID: new DataView( settingsData.slice( 0x2C, 0x30 ).buffer ).getUint32( 0, 1 )
+				flags: dataView.getUint32( root + 0x20, true ),
+				eulaVersion: `Minor: ${ dataView.getUint8( root + 0x24, true ) } Major: ${ dataView.getUint8( root + 0x25, true ) }`,
+				cecID: dataView.getUint32( root + 0x2C, true )
 			},
 			output = document.createElement( 'div' );
 
@@ -146,7 +147,7 @@
 		ratingTable.className = 'wikitable';
 		ratingHead.innerHTML = '<tr><th>Rating</th><th>Value</th></tr>';
 		for ( let j = 0; j < 16; j++ ) {
-			const value = settingsData[ j ];
+			const value = dataView.getUint8( root + j, true );
 			if ( value ) {
 				const row = ratingBody.insertRow( -1 ),
 					txt = [];
@@ -250,7 +251,7 @@
 		return output;
 	}
 
-	function getTitles( array ) {
+	function getTitles( dataView ) {
 		const te16 = new TextDecoder( 'utf-16' ),
 			output = document.createElement( 'div' ),
 			header = output.appendChild( document.createElement( 'h2' ) ),
@@ -262,7 +263,7 @@
 		tHead.innerHTML = '<tr><th>Language</th><th>Short description</th><th>Long description</th><th>Publisher</th></tr>';
 
 		for ( let i = 0; i < 16; i++ ) {
-			const titleData = array.slice(
+			const titleData = dataView.buffer.slice(
 					0x08 + 0x200 * i,
 					0x08 + 0x200 * i + 0x200
 				),
@@ -281,36 +282,28 @@
 		return output;
 	}
 
-	function getVersion( version ) {
+	function getVersion( dataView ) {
 		const output = document.createElement( 'div' ),
 			header = output.appendChild( document.createElement( 'h2' ) ),
 			content = output.appendChild( document.createElement( 'span' ) );
 		header.textContent = 'Version';
-		content.textContent = version;
+		content.textContent = dataView.getUint16( 0x04, true );
 		return output;
 	}
 
 	addFormat( {
 		name: 'SMDH',
 		extensions: [ '.icn' ],
-		magic: [
-			[ 0, 0x53 ], // S
-			[ 1, 0x4D ], // M
-			[ 2, 0x44 ], // D
-			[ 3, 0x48 ] // H
-		],
-		func: function ( array ) {
+		magic: 'SMDH',
+		func: function ( dataView ) {
 			const output = document.createElement( 'div' );
 
 			// Output
 			output.append(
-				getIcons(
-					array.slice( 0x2040, 0x24C0 ),
-					array.slice( 0x24C0, 0x36C0 )
-				),
-				getVersion( new DataView( array.slice( 0x04, 0x06 ).buffer ).getUint16( 0, 1 ) ),
-				getTitles( array ),
-				getSettings( array.slice( 0x2008, 0x2008 + 0x30 ) )
+				getIcons( dataView.buffer.slice( 0x2040, 0x24C0 ), dataView.buffer.slice( 0x24C0, 0x36C0 ) ),
+				getVersion( dataView ),
+				getTitles( dataView ),
+				getSettings( dataView )
 			);
 			return output;
 		}

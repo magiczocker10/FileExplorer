@@ -100,7 +100,7 @@
 		uploadButton.accept = allAccept.join( ', ' );
 	}
 
-	function addWindow( array, windowTitle ) {
+	function addWindow( dataView, windowTitle ) {
 		const main = template.children[ 0 ].cloneNode( true ),
 			title = main.querySelector( '.window-title' ),
 			minimize = main.querySelector( '.window-minimize' ),
@@ -117,28 +117,13 @@
 
 		makeResizableDiv( main );
 
-		if (
-			array[ 0 ] === 89 && // Y
-			array[ 1 ] === 97 && // a
-			array[ 2 ] === 122 && // z
-			array[ 3 ] === 48 // 0
-		) {
-			array = window.yaz0.decode( array.slice( 0x10 ), new DataView(
-				array.slice( 4, 8 ).buffer
-			).getUint32( 0, false ) );
+		if ( getString( dataView, 0, 4 ) === 'Yaz0' ) {
+			dataView = window.yaz0.decode( dataView, new DataView( dataView.buffer.slice( 4, 8 ) ).getUint32( 0, false ) );
 		}
 
 		formats.forEach( ( format ) => {
-			let c = 0;
-
-			format[ 0 ].forEach( ( b ) => {
-				if ( array[ b[ 0 ] ] === b[ 1 ] ) {
-					c++;
-				}
-			} );
-
-			if ( c === format[ 0 ].length ) {
-				content.appendChild( format[ 1 ]( array ) );
+			if ( getString(dataView, 0, format[ 0 ].length ) === format[ 0 ] ) {
+				content.appendChild( format[ 1 ]( dataView ) );
 				return;
 			}
 		} );
@@ -157,13 +142,22 @@
 	function loadFile( stream ) {
 		const reader = new FileReader();
 		reader.onloadend = function ( readerEvent ) {
-			addWindow( new Uint8Array( readerEvent.target.result ), `${ stream.name } (${ returnFileSize( stream.size ) })` );
+			const buf = readerEvent.target.result;
+			addWindow( new DataView( buf ), `${ stream.name } (${ returnFileSize( stream.size ) })` );
 		};
 		reader.readAsArrayBuffer( stream );
 	}
 
 	window.addFormat = addFormat;
 	window.addWindow = addWindow;
+	window.getString = function( dataView, start, length ) {
+		let out = '';
+		for (let i=0; i<length; i++) {
+			out += String.fromCharCode( dataView.getUint8( start + i, false ) );
+		}
+		return out;
+	}
+
 	window.addEventListener( 'load', () => {
 		body = document.getElementsByTagName( 'body' )[ 0 ];
 		template = document.getElementsByClassName( 'window-template' )[ 0 ];
