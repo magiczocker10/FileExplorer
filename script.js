@@ -122,10 +122,12 @@
 		}
 
 		formats.forEach( ( format ) => {
-			if ( getString(dataView, 0, format[ 0 ].length ) === format[ 0 ] ) {
-				content.appendChild( format[ 1 ]( dataView ) );
-				return;
-			}
+			format[ 0 ].forEach( ( magic ) => {
+				if ( getString( dataView, 0, magic.length ) === magic ) {
+					content.appendChild( format[ 1 ]( dataView ) );
+					return;
+				}
+			} );
 		} );
 	}
 
@@ -153,7 +155,7 @@
 	window.getString = function( dataView, start, length ) {
 		let out = '';
 		for (let i=0; i<length; i++) {
-			out += String.fromCharCode( dataView.getUint8( start + i, false ) );
+			out += String.fromCharCode( dataView.getUint8( start + i ) );
 		}
 		return out;
 	}

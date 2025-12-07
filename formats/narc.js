@@ -3,7 +3,7 @@
 addFormat( {
 	name: 'NARC',
 	extensions: [ '.narc', '.szs' ],
-	magic: 'NARC',
+	magic: [ 'NARC' ],
 	func: function ( dataView ) {
 		const isLittleEndian = dataView.getUint16(4, false ) !== 0xFFFE,
 			fileData = {},
@@ -41,7 +41,7 @@ addFormat( {
 				let cursor = 0x10;
 				fileData.fileNames = [];
 				for ( let j = 0; j < fileData.entryAmount; j++ ) {
-					const nameLength = dataView.getUint8( offset + cursor, isLittleEndian );
+					const nameLength = dataView.getUint8( offset + cursor );
 					fileData.fileNames.push( getString( dataView, offset + cursor + 1, nameLength ) );
 					cursor += 1 + nameLength;
 				}
@@ -83,7 +83,7 @@ addFormat( {
 			download.value = '\u21E9';
 			button.addEventListener( 'click', () => window.addWindow( new DataView( d[ 1 ] ), d[ 0 ] ) );
 			download.addEventListener( 'click', () => {
-				const blobData = new Blob( [ d[ 1 ].buffer ], { type: 'text/plain' } ),
+				const blobData = new Blob( [ d[ 1 ] ], { type: 'text/plain' } ),
 					a = document.createElement( 'a' );
 				a.download = d[ 0 ];
 				a.setAttribute( 'href', URL.createObjectURL( blobData ) );

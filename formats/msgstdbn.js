@@ -1,7 +1,7 @@
 addFormat( {
 	name: 'MSBT',
 	extensions: [ '.msbt' ],
-	magic: 'MsgStdBn',
+	magic: [ 'MsgStdBn' ],
 	func: function ( dataView ) {
 		const te16 = new TextDecoder( 'utf-16' ),
 			output = document.createElement( 'table' ),
@@ -17,8 +17,8 @@ addFormat( {
 				isLittleEndian: isLittleEndian,
 				numberSections: dataView.getUint16( 0x0E, isLittleEndian ),
 				fileSize: dataView.getUint16( 18, isLittleEndian ),
-				messageEncoding: dataView.getUint8( 0x0C, false ),
-				versionNumber: dataView.getUint8( 0x0D, false )
+				messageEncoding: dataView.getUint8( 0x0C ),
+				versionNumber: dataView.getUint8( 0x0D )
 			},
 			sections = [];
 		console.log( header );

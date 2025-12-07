@@ -118,7 +118,7 @@
 					bitId: dataView.getBigUint64( root + 0x18, true )
 				},
 				flags: dataView.getUint32( root + 0x20, true ),
-				eulaVersion: `Minor: ${ dataView.getUint8( root + 0x24, true ) } Major: ${ dataView.getUint8( root + 0x25, true ) }`,
+				eulaVersion: `Minor: ${ dataView.getUint8( root + 0x24 ) } Major: ${ dataView.getUint8( root + 0x25 ) }`,
 				cecID: dataView.getUint32( root + 0x2C, true )
 			},
 			output = document.createElement( 'div' );
@@ -147,7 +147,7 @@
 		ratingTable.className = 'wikitable';
 		ratingHead.innerHTML = '<tr><th>Rating</th><th>Value</th></tr>';
 		for ( let j = 0; j < 16; j++ ) {
-			const value = dataView.getUint8( root + j, true );
+			const value = dataView.getUint8( root + j );
 			if ( value ) {
 				const row = ratingBody.insertRow( -1 ),
 					txt = [];
@@ -294,7 +294,7 @@
 	addFormat( {
 		name: 'SMDH',
 		extensions: [ '.icn' ],
-		magic: 'SMDH',
+		magic: [ 'SMDH' ],
 		func: function ( dataView ) {
 			const output = document.createElement( 'div' );
 

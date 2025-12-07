@@ -3,7 +3,7 @@
 addFormat( {
 	name: 'SARC',
 	extensions: [ '.sarc', '.szs' ],
-	magic: 'SARC',
+	magic: [ 'SARC' ],
 	func: function ( dataView ) {
 		const te8 = new TextDecoder( 'utf-8' ),
 			isLittleEndian = dataView.getUint16(6, false ) === 0xFFFE,
@@ -47,7 +47,7 @@ addFormat( {
 					lastZero = false,
 					cursorSFNT = 0x07;
 				while ( index <= fileData.sfat.nodeCount ) {
-					const byte = dataView.getUint8( offset + cursorSFNT, false );
+					const byte = dataView.getUint8( offset + cursorSFNT );
 					cursorSFNT++;
 					if ( byte === 0 ) {
 						if ( lastZero ) {
