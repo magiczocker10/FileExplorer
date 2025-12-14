@@ -43,6 +43,6 @@ window.yaz0 = {
 			currCodeByte <<= 1;
 			validBitCounter -= 1;
 		}
-		return new DataView(dst.buffer, dst.byteOffset, dst.byteLength);;
+		return new DataView( dst.buffer, dst.byteOffset, dst.byteLength );
 	}
 };

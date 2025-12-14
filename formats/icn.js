@@ -142,10 +142,13 @@
 		const ratingHeader = output.appendChild( document.createElement( 'h3' ) ),
 			ratingTable = output.appendChild( document.createElement( 'table' ) ),
 			ratingBody = ratingTable.createTBody(),
-			ratingHead = ratingTable.createTHead();
+			ratingHead = ratingTable.createTHead(),
+			ratingRow = ratingHead.insertRow( -1 );
 		ratingHeader.textContent = 'Ratings';
 		ratingTable.className = 'wikitable';
-		ratingHead.innerHTML = '<tr><th>Rating</th><th>Value</th></tr>';
+		ratingRow.appendChild( document.createElement( 'th' ) ).textContent = 'Rating';
+		ratingRow.appendChild( document.createElement( 'th' ) ).textContent = 'Value';
+
 		for ( let j = 0; j < 16; j++ ) {
 			const value = dataView.getUint8( root + j );
 			if ( value ) {
@@ -180,15 +183,26 @@
 		const otherHeader = output.appendChild( document.createElement( 'h3' ) ),
 			otherTable = output.appendChild( document.createElement( 'table' ) ),
 			otherHead = otherTable.createTHead(),
-			otherBody = otherTable.createTBody();
+			otherBody = otherTable.createTBody(),
+			otherRow = otherHead.insertRow( -1 );
 		otherHeader.textContent = 'Other';
 		otherTable.className = 'wikitable';
-		otherHead.innerHTML = '<tr><th>Field</th><th>Value</th></tr>';
-		otherBody.innerHTML =
-			`<tr><td>Match maker ID</td><td>${ settings.matchMakerID.id }</td></tr>
-			<tr><td>Match maker Bit-ID</td><td>${ settings.matchMakerID.bitId }</td></tr>
-			<tr><td>Eula Version</td><td>${ settings.eulaVersion }</td></tr>
-			<tr><td>CEC-ID</td><td>${ settings.cecID }</td></tr>`;
+		otherRow.appendChild( document.createElement( 'th' ) ).textContent = 'Field';
+		otherRow.appendChild( document.createElement( 'th' ) ).textContent = 'Value';
+
+		const idRow = otherBody.insertRow( -1 ),
+			bitIdRow = otherBody.insertRow( -1 ),
+			eulaRow = otherBody.insertRow( -1 ),
+			cecRow = otherBody.insertRow( -1 );
+
+		idRow.insertCell( -1 ).textContent = 'Match maker ID';
+		idRow.insertCell( -1 ).textContent = settings.matchMakerID.id;
+		bitIdRow.insertCell( -1 ).textContent = 'Match maker Bit-ID';
+		bitIdRow.insertCell( -1 ).textContent = settings.matchMakerID.bitId;
+		eulaRow.insertCell( -1 ).textContent = 'Eula Version';
+		eulaRow.insertCell( -1 ).textContent = settings.eulaVersion;
+		cecRow.insertCell( -1 ).textContent = 'CEC-ID';
+		cecRow.insertCell( -1 ).textContent = settings.cecID;
 
 		return output;
 	}
@@ -218,6 +232,8 @@
 		const table = output.appendChild( document.createElement( 'table' ) ),
 			body = table.createTBody(),
 			head = table.createTHead(),
+			hRow = head.insertRow( -1 ),
+			hCell = hRow.appendChild( document.createElement( 'th' ) ),
 			rowSmall = body.insertRow( -1 ),
 			rowLarge = body.insertRow( -1 ),
 			buttonSmall = document.createElement( 'button' ),
@@ -232,7 +248,8 @@
 		}
 
 		table.className = 'wikitable';
-		head.innerHTML = '<tr><th colspan="2">Images</th></tr>';
+		hCell.textContent = 'Images';
+		hCell.colspan = 2;
 		rowSmall.insertCell( -1 ).append( canvSmall );
 		rowLarge.insertCell( -1 ).append( canvLarge );
 		rowSmall.insertCell( -1 ).append( buttonSmall );
@@ -260,7 +277,12 @@
 			tBody = table.createTBody();
 		header.textContent = 'Titles';
 		table.className = 'wikitable';
-		tHead.innerHTML = '<tr><th>Language</th><th>Short description</th><th>Long description</th><th>Publisher</th></tr>';
+
+		const hRow = tHead.insertRow( -1 );
+		hRow.appendChild( document.createElement( 'th' ) ).textContent = 'Language';
+		hRow.appendChild( document.createElement( 'th' ) ).textContent = 'Short description';
+		hRow.appendChild( document.createElement( 'th' ) ).textContent = 'Long description';
+		hRow.appendChild( document.createElement( 'th' ) ).textContent = 'Publisher';
 
 		for ( let i = 0; i < 16; i++ ) {
 			const titleData = dataView.buffer.slice(

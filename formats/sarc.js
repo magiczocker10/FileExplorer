@@ -6,7 +6,7 @@ addFormat( {
 	magic: [ 'SARC' ],
 	func: function ( dataView ) {
 		const te8 = new TextDecoder( 'utf-8' ),
-			isLittleEndian = dataView.getUint16(6, false ) === 0xFFFE,
+			isLittleEndian = dataView.getUint16( 6, false ) === 0xFFFE,
 			fileData = {
 				fileSize: dataView.getUint32( 8, true ),
 				dataOffsetBeginning: dataView.getUint32( 0x0C, true ),
@@ -78,10 +78,12 @@ addFormat( {
 		}
 		console.log( 'SARC - Output Data', outputData );
 		const output = document.createElement( 'table' ),
-			head = output.appendChild( document.createElement( 'thead' ) ),
-			body = output.appendChild( document.createElement( 'tbody' ) );
+			head = output.createTHead(),
+			body = output.createTBody(),
+			hCell = head.appendChild( document.createElement( 'th' ) );
 		output.className = 'wikitable stickytable';
-		head.innerHTML = '<tr><th colspan="3">Files</th></tr>';
+		hCell.textContent = 'Files';
+		hCell.colspan = 3;
 
 		outputData.forEach( ( d ) => {
 			const row = body.insertRow( -1 ),

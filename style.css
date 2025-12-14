@@ -179,6 +179,16 @@ body {
 	pointer-events: none;
 }
 
+/* Styles for BYAML */
+details > details {
+	margin-left: 1rem;
+}
+
+details ul {
+	margin: 0;
+	padding: 0 0 0 2rem;
+}
+
 /* Error output */
 .errorOutput ul {
 	background-color: #f9eceb;

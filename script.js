@@ -4,8 +4,8 @@
 		template;
 	const supported = document.createElement( 'table' ),
 		uploadButton = document.createElement( 'input' ),
-		supportedHead = supported.appendChild( document.createElement( 'thead' ) ),
-		supportedBody = supported.appendChild( document.createElement( 'tbody' ) ),
+		supportedHead = supported.createTHead(),
+		supportedBody = supported.createTBody(),
 		formats = [],
 		allAccept = [];
 	uploadButton.type = 'file';
@@ -115,7 +115,7 @@
 		close.addEventListener( 'click', closeWindow, false );
 		moveToFront( { target: title } );
 
-		makeResizableDiv( main );
+		window.makeResizableDiv( main );
 
 		if ( getString( dataView, 0, 4 ) === 'Yaz0' ) {
 			dataView = window.yaz0.decode( dataView, new DataView( dataView.buffer.slice( 4, 8 ) ).getUint32( 0, false ) );
@@ -150,15 +150,20 @@
 		reader.readAsArrayBuffer( stream );
 	}
 
+	DataView.prototype.getUint24 = function ( byteOffset = 0, littleEndian = false ) {
+		return littleEndian ?
+			this.getUint8( byteOffset ) + ( this.getUint16( byteOffset + 1, true ) << 8 ) :
+			( this.getUint16( byteOffset ) << 8 ) + this.getUint8( byteOffset + 2 );
+	};
 	window.addFormat = addFormat;
 	window.addWindow = addWindow;
-	window.getString = function( dataView, start, length ) {
+	window.getString = function ( dataView, start, length ) {
 		let out = '';
-		for (let i=0; i<length; i++) {
+		for ( let i = 0; i < length; i++ ) {
 			out += String.fromCharCode( dataView.getUint8( start + i ) );
 		}
 		return out;
-	}
+	};
 
 	window.addEventListener( 'load', () => {
 		body = document.getElementsByTagName( 'body' )[ 0 ];

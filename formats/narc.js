@@ -68,10 +68,12 @@ addFormat( {
 		}
 		console.log( 'NARC - Output Data', outputData );
 		const output = document.createElement( 'table' ),
-			head = output.appendChild( document.createElement( 'thead' ) ),
-			body = output.appendChild( document.createElement( 'tbody' ) );
+			head = output.createTHead(),
+			body = output.createTBody(),
+			hCell = head.appendChild( document.createElement( 'th' ) );
 		output.className = 'wikitable stickytable';
-		head.innerHTML = '<tr><th colspan="3">Files</th></tr>';
+		hCell.textContent = 'Files';
+		hCell.colspan = 3;
 
 		outputData.forEach( ( d ) => {
 			const row = body.insertRow( -1 ),

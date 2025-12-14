@@ -5,15 +5,17 @@ addFormat( {
 	func: function ( dataView ) {
 		const te16 = new TextDecoder( 'utf-16' ),
 			output = document.createElement( 'table' ),
-			head = output.appendChild( document.createElement( 'thead' ) ),
-			body = output.appendChild( document.createElement( 'tbody' ) ),
+			head = output.createTHead(),
+			body = output.createTBody(),
+			hRow = head.insertRow( -1 ),
 			data = [];
 		output.className = 'wikitable stickytable';
-		head.innerHTML = '<tr><th>Label</th><th>String</th></tr>';
+		hRow.appendChild( document.createElement( 'th' ) ).textContent = 'Label';
+		hRow.appendChild( document.createElement( 'th' ) ).textContent = 'String';
 
 		const isLittleEndian = dataView.getUint16( 8, false ) === 0xFFFE,
 			header = {
-				fileMagic: getString(dataView, 0, 8),
+				fileMagic: getString( dataView, 0, 8 ),
 				isLittleEndian: isLittleEndian,
 				numberSections: dataView.getUint16( 0x0E, isLittleEndian ),
 				fileSize: dataView.getUint16( 18, isLittleEndian ),
@@ -22,9 +24,8 @@ addFormat( {
 			},
 			sections = [];
 		console.log( header );
-		body.innerHTML = '';
 		for ( let offset = 0x20; offset < header.fileSize - 3; offset++ ) {
-			const magic = getString( dataView, offset, 4);
+			const magic = getString( dataView, offset, 4 );
 			if ( magic !== 'ATR1' && magic !== 'NLI1' && magic !== 'TXT2' && magic !== 'LBL1' ) {
 				continue;
 			}

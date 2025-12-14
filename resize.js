@@ -1,5 +1,5 @@
 /* https://medium.com/the-z/making-a-resizable-div-in-js-is-not-easy-as-you-think-bda19a1bc53d */
-function makeResizableDiv( element ) {
+window.makeResizableDiv = function ( element ) {
 	const resizers = element.querySelectorAll( '.resizer' ),
 		minWidth = 450,
 		minHeight = 300;
@@ -57,4 +57,4 @@ function makeResizableDiv( element ) {
 			}, false );
 		} );
 	} );
-}
+};
