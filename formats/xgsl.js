@@ -10,7 +10,7 @@
 			0x0D: 'Português'
 		};
 	addFormat( {
-		name: 'XGSL',
+		name: 'XGSL (Exient XPS Engine)',
 		extensions: [ '.xlc' ],
 		magic: [ 'XGSL' ],
 		func: function ( dataView ) {
