@@ -184,9 +184,17 @@ details > details {
 	margin-left: 1rem;
 }
 
-details ul {
+details > ul {
 	margin: 0;
 	padding: 0 0 0 2rem;
+}
+
+details > ul > li > button {
+	margin-left: 1rem;
+}
+
+details > summary {
+	cursor: pointer;
 }
 
 /* Error output */

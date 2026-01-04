@@ -75,7 +75,7 @@
 		if ( !main.classList.contains( 'window-container' ) ) {
 			main = main.parentElement;
 		}
-		if ( Number( main.style.zIndex ) === index ) {
+		if ( !main.classList.contains( 'window-container' ) || Number( main.style.zIndex ) === index ) {
 			return;
 		}
 		index++;
@@ -88,7 +88,7 @@
 	}
 
 	function addFormat( data ) {
-		formats.push( [ data.magic, data.func ] );
+		formats.push( [ data.magic, data.func, data.magicStart || 0 ] );
 		const row = supportedBody.insertRow( -1 );
 		row.insertCell( -1 ).textContent = data.name;
 		row.insertCell( -1 ).textContent = data.extensions.join( ', ' );
@@ -123,7 +123,7 @@
 
 		formats.forEach( ( format ) => {
 			format[ 0 ].forEach( ( magic ) => {
-				if ( getString( dataView, 0, magic.length ) === magic ) {
+				if ( getString( dataView, format[ 2 ], magic.length ) === magic ) {
 					content.appendChild( format[ 1 ]( dataView ) );
 					return;
 				}
@@ -154,6 +154,11 @@
 		return littleEndian ?
 			this.getUint8( byteOffset ) + ( this.getUint16( byteOffset + 1, true ) << 8 ) :
 			( this.getUint16( byteOffset ) << 8 ) + this.getUint8( byteOffset + 2 );
+	};
+	DataView.prototype.getUint64 = function ( byteOffset = 0, littleEndian = false ) {
+		return littleEndian ?
+			this.getUint32( byteOffset, true ) + ( this.getUint32( byteOffset + 4, true ) << 32 ) :
+			( this.getUint32( byteOffset ) << 32 ) + this.getUint32( byteOffset + 4 );
 	};
 	window.addFormat = addFormat;
 	window.addWindow = addWindow;
